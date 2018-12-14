@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const slugify = require('slugify');
 const APIError = require('../errors');
 
 router.use(express.json());
@@ -73,7 +74,11 @@ router.delete('/:code', async (request, response, next) => {
 
 router.post('/', async (request, response, next) => {
   try {
-    let { code, name, description } = request.body;
+    let { name, description } = request.body;
+    let code = slugify(name, {
+      lower: true,
+      remove: /[ ;*+?~.\[\]{}()'"!:@^]/g
+    });
     var results = await db.query(
       'INSERT INTO companies (code, name, description) VALUES ($1, $2, $3) RETURNING *',
       [code, name, description]

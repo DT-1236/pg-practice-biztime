@@ -45,9 +45,13 @@ router.get('/:id', (request, response, next) => {
 router.put('/:id', async (request, response, next) => {
   try {
     let amt = request.body.amt || request.invoice.amt;
+    let paid = request.body.hasOwnProperty('paid')
+      ? JSON.parse(request.body.paid.toLowerCase())
+      : request.invoice.paid;
+    let paid_date = paid ? new Date() : null;
     var result = await db.query(
-      `UPDATE invoices SET amt=$1 WHERE id=$2 RETURNING *`,
-      [amt, request.invoice.id]
+      `UPDATE invoices SET amt=$1, paid=$2, paid_date=$3 WHERE id=$4 RETURNING *`,
+      [amt, paid, paid_date, request.invoice.id]
     );
     return response.json({ invoice: result.rows[0] });
   } catch (error) {
